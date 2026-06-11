@@ -29,7 +29,17 @@ app.use(
 
 app.use(
   cors({
-    origin: env.clientUrl,
+    origin: function (origin, callback) {
+      const allowedOrigins = [
+        env.clientUrl,
+        "https://admin.s2urbangaze.com"
+      ];
+      if (!origin || allowedOrigins.includes(origin) || origin.startsWith("http://localhost:")) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
