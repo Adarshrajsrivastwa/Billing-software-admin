@@ -1,9 +1,6 @@
 import { body, param, query } from "express-validator";
 import { Category } from "../models/Category.js";
 
-const UNITS = ["Sq.ft", "Running Feet", "Meter", "Piece", "Nos", "Lump Sum"];
-const GST_RATES = [0, 5, 12, 18, 28];
-
 const itemFields = [
   body("name")
     .trim()
@@ -27,22 +24,6 @@ const itemFields = [
     .trim()
     .isLength({ max: 1000 })
     .withMessage("Description cannot exceed 1000 characters"),
-  body("unit")
-    .trim()
-    .notEmpty()
-    .withMessage("Unit is required")
-    .isIn(UNITS)
-    .withMessage(`Unit must be one of: ${UNITS.join(", ")}`),
-  body("rate")
-    .notEmpty()
-    .withMessage("Rate is required")
-    .isFloat({ min: 0 })
-    .withMessage("Rate must be a positive number"),
-  body("gst")
-    .optional({ values: "falsy" })
-    .toInt()
-    .isIn(GST_RATES)
-    .withMessage(`GST percentage must be one of: ${GST_RATES.join(", ")}%`),
   body("status")
     .optional()
     .trim()
@@ -81,20 +62,6 @@ export const updateItemValidator = [
     .optional({ values: "falsy" })
     .trim()
     .isLength({ max: 1000 }),
-  body("unit")
-    .optional()
-    .trim()
-    .isIn(UNITS)
-    .withMessage("Invalid unit type"),
-  body("rate")
-    .optional()
-    .isFloat({ min: 0 })
-    .withMessage("Rate must be a positive number"),
-  body("gst")
-    .optional({ values: "falsy" })
-    .toInt()
-    .isIn(GST_RATES)
-    .withMessage("Invalid GST rate"),
   body("status")
     .optional()
     .trim()

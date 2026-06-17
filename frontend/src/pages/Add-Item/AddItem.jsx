@@ -70,9 +70,6 @@ export default function AddItem() {
     itemName: "",
     category: "",
     description: "",
-    unit: "Sq.ft",
-    rate: "",
-    gst: "",
     status: "Active",
   });
   const [errors, setErrors] = useState({});
@@ -106,8 +103,6 @@ export default function AddItem() {
     const e = {};
     if (!formData.itemName.trim()) e.itemName = true;
     if (!formData.category) e.category = true;
-    if (!formData.rate || isNaN(formData.rate) || Number(formData.rate) <= 0)
-      e.rate = true;
     return e;
   };
 
@@ -292,171 +287,7 @@ export default function AddItem() {
             </div>
           </div>
 
-          {/* Pricing */}
-          <div
-            style={{
-              background: COLORS.white,
-              borderRadius: "16px",
-              padding: "24px",
-              border: `1px solid ${COLORS.border}`,
-              marginBottom: "20px",
-            }}
-          >
-            <h2
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                marginBottom: "20px",
-                color: COLORS.primary,
-                fontSize: "16px",
-                fontWeight: "600",
-              }}
-            >
-              <IndianRupee size={20} color={COLORS.accent} />
-              Pricing
-            </h2>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                gap: "16px",
-              }}
-            >
-              {/* Unit */}
-              <div>
-                <label
-                  style={{
-                    display: "block",
-                    marginBottom: "10px",
-                    fontSize: "13px",
-                    fontWeight: "500",
-                    color: COLORS.primary,
-                  }}
-                >
-                  Unit
-                </label>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                  {UNITS.map((unit) => (
-                    <label
-                      key={unit}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        padding: "7px 14px",
-                        border: `1px solid ${formData.unit === unit ? COLORS.accent : COLORS.border}`,
-                        borderRadius: "8px",
-                        cursor: "pointer",
-                        fontSize: "13px",
-                        color:
-                          formData.unit === unit ? COLORS.accent : COLORS.muted,
-                        background:
-                          formData.unit === unit ? "#EEF2FF" : COLORS.white,
-                        fontWeight: formData.unit === unit ? "600" : "400",
-                        transition: "all 0.15s",
-                      }}
-                    >
-                      <input
-                        type="radio"
-                        name="unit"
-                        value={unit}
-                        checked={formData.unit === unit}
-                        onChange={handleChange}
-                        style={{ display: "none" }}
-                      />
-                      {unit}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "16px",
-                }}
-              >
-                <div>
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: "6px",
-                      fontSize: "13px",
-                      fontWeight: "500",
-                      color: COLORS.primary,
-                    }}
-                  >
-                    Rate *
-                  </label>
-                  <div style={{ position: "relative" }}>
-                    <span
-                      style={{
-                        position: "absolute",
-                        left: "14px",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        color: COLORS.muted,
-                        fontSize: "14px",
-                      }}
-                    >
-                      ₹
-                    </span>
-                    <input
-                      type="number"
-                      name="rate"
-                      placeholder="0.00"
-                      value={formData.rate}
-                      style={
-                        errors.rate
-                          ? {
-                              ...inputStyle,
-                              paddingLeft: "30px",
-                              borderColor: "#EF4444",
-                            }
-                          : { ...inputStyle, paddingLeft: "30px" }
-                      }
-                      onChange={handleChange}
-                    />
-                  </div>
-                  {errors.rate && (
-                    <p style={{ color: "#EF4444", fontSize: 12, marginTop: 4 }}>
-                      Enter a valid rate
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: "6px",
-                      fontSize: "13px",
-                      fontWeight: "500",
-                      color: COLORS.primary,
-                    }}
-                  >
-                    GST %
-                  </label>
-                  <select
-                    name="gst"
-                    value={formData.gst}
-                    style={inputStyle}
-                    onChange={handleChange}
-                  >
-                    <option value="">Select GST</option>
-                    <option value="0">0%</option>
-                    <option value="5">5%</option>
-                    <option value="12">12%</option>
-                    <option value="18">18%</option>
-                    <option value="28">28%</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* Status */}
           <div

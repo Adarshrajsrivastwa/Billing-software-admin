@@ -26,28 +26,6 @@ const itemSchema = new mongoose.Schema(
       trim: true,
       maxlength: 1000,
     },
-    unit: {
-      type: String,
-      required: [true, "Unit is required"],
-      enum: {
-        values: ["Sq.ft", "Running Feet", "Meter", "Piece", "Nos", "Lump Sum"],
-        message: "{VALUE} is not a valid unit",
-      },
-      default: "Sq.ft",
-    },
-    rate: {
-      type: Number,
-      required: [true, "Rate is required"],
-      min: [0, "Rate cannot be negative"],
-    },
-    gst: {
-      type: Number,
-      enum: {
-        values: [0, 5, 12, 18, 28],
-        message: "{VALUE}% is not a valid GST rate",
-      },
-      default: 0,
-    },
     status: {
       type: String,
       enum: {

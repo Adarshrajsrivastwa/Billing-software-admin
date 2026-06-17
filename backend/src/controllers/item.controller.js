@@ -32,9 +32,6 @@ export const createItem = asyncHandler(async (req, res) => {
     name: req.body.name.trim(),
     category: req.body.category,
     description: req.body.description?.trim() || undefined,
-    unit: req.body.unit || "Sq.ft",
-    rate: Number(req.body.rate),
-    gst: req.body.gst !== undefined ? Number(req.body.gst) : 0,
     status: req.body.status || "Active",
     createdBy: req.user._id,
   };
@@ -95,9 +92,6 @@ export const updateItem = asyncHandler(async (req, res) => {
     "name",
     "category",
     "description",
-    "unit",
-    "rate",
-    "gst",
     "status",
   ];
 

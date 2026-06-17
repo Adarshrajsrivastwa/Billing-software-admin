@@ -174,9 +174,6 @@ const emptyForm = {
   name: "",
   category: "",
   description: "",
-  unit: "Sq.ft",
-  rate: "",
-  gst: "",
   status: "Active",
 };
 
@@ -237,9 +234,6 @@ function ViewModal({ item, onClose }) {
     ["Item ID", item.id],
     ["Item Name", item.name],
     ["Category", item.category],
-    ["Unit", item.unit],
-    ["Rate", `₹${item.rate.toLocaleString("en-IN")}`],
-    ["GST", `${item.gst}%`],
     ["Status", item.status],
     ["Description", item.description || "—"],
   ];
@@ -505,8 +499,6 @@ function ItemModal({ mode, item, categories = [], onClose, onSave }) {
     const e = {};
     if (!form.name.trim()) e.name = "Item name is required";
     if (!form.category) e.category = "Category is required";
-    if (!form.rate || isNaN(form.rate) || Number(form.rate) <= 0)
-      e.rate = "Enter a valid rate";
     return e;
   };
 
@@ -516,7 +508,7 @@ function ItemModal({ mode, item, categories = [], onClose, onSave }) {
       setErrors(e);
       return;
     }
-    onSave({ ...form, rate: Number(form.rate), gst: Number(form.gst) || 0 });
+    onSave(form);
   };
 
   const labelStyle = {
@@ -673,118 +665,7 @@ function ItemModal({ mode, item, categories = [], onClose, onSave }) {
             </div>
           </div>
 
-          {/* Pricing */}
-          <div
-            style={{
-              background: COLORS.bg,
-              borderRadius: "12px",
-              padding: "20px",
-              border: `1px solid ${COLORS.border}`,
-              marginBottom: "16px",
-            }}
-          >
-            <h3
-              style={{
-                margin: "0 0 14px",
-                fontSize: "14px",
-                fontWeight: "600",
-                color: COLORS.primary,
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-              }}
-            >
-              <IndianRupee size={15} color={COLORS.accent} /> Pricing
-            </h3>
-            <div style={{ marginBottom: "14px" }}>
-              <label style={labelStyle}>Unit</label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                {UNITS.map((u) => (
-                  <label
-                    key={u}
-                    style={{
-                      padding: "7px 14px",
-                      border: `1px solid ${form.unit === u ? COLORS.accent : COLORS.border}`,
-                      borderRadius: "8px",
-                      cursor: "pointer",
-                      fontSize: "13px",
-                      color: form.unit === u ? COLORS.accent : COLORS.muted,
-                      background: form.unit === u ? "#EEF2FF" : COLORS.white,
-                      fontWeight: form.unit === u ? "600" : "400",
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      name="unit"
-                      value={u}
-                      checked={form.unit === u}
-                      onChange={handleChange}
-                      style={{ display: "none" }}
-                    />
-                    {u}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "14px",
-              }}
-            >
-              <div>
-                <label style={labelStyle}>Rate (₹) *</label>
-                <div style={{ position: "relative" }}>
-                  <span
-                    style={{
-                      position: "absolute",
-                      left: "14px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      color: COLORS.muted,
-                      fontSize: "14px",
-                    }}
-                  >
-                    ₹
-                  </span>
-                  <input
-                    type="number"
-                    name="rate"
-                    value={form.rate}
-                    onChange={handleChange}
-                    placeholder="0.00"
-                    style={{
-                      ...inputStyle,
-                      paddingLeft: "30px",
-                      borderColor: errors.rate ? "#EF4444" : COLORS.border,
-                    }}
-                  />
-                </div>
-                {errors.rate && (
-                  <span style={{ color: "#EF4444", fontSize: "12px" }}>
-                    {errors.rate}
-                  </span>
-                )}
-              </div>
-              <div>
-                <label style={labelStyle}>GST %</label>
-                <select
-                  name="gst"
-                  value={form.gst}
-                  onChange={handleChange}
-                  style={inputStyle}
-                >
-                  <option value="">Select GST</option>
-                  {GST_OPTIONS.map((g) => (
-                    <option key={g} value={g}>
-                      {g}%
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
+
 
           {/* Status */}
           <div
@@ -1224,9 +1105,6 @@ export default function AllItems() {
                     "Item ID",
                     "Item Name",
                     "Category",
-                    "Unit",
-                    "Rate (₹)",
-                    "GST %",
                     "Status",
                     "Actions",
                   ].map((col) => (
@@ -1253,7 +1131,7 @@ export default function AllItems() {
                 {loading ? (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={5}
                       style={{
                         padding: "48px",
                         textAlign: "center",
@@ -1267,7 +1145,7 @@ export default function AllItems() {
                 ) : paginated.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={5}
                       style={{
                         padding: "48px",
                         textAlign: "center",
@@ -1334,36 +1212,7 @@ export default function AllItems() {
                           {item.category}
                         </span>
                       </td>
-                      <td
-                        style={{
-                          padding: "14px 16px",
-                          borderBottom: `1px solid ${COLORS.border}`,
-                          color: COLORS.muted,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {item.unit}
-                      </td>
-                      <td
-                        style={{
-                          padding: "14px 16px",
-                          borderBottom: `1px solid ${COLORS.border}`,
-                          color: COLORS.primary,
-                          fontWeight: "500",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        ₹{item.rate.toLocaleString("en-IN")}
-                      </td>
-                      <td
-                        style={{
-                          padding: "14px 16px",
-                          borderBottom: `1px solid ${COLORS.border}`,
-                          color: COLORS.muted,
-                        }}
-                      >
-                        {item.gst}%
-                      </td>
+
                       <td
                         style={{
                           padding: "14px 16px",
