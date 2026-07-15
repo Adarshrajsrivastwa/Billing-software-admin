@@ -702,203 +702,238 @@ function QuotationPDFView({ quote, company }) {
 
   return (
     <div
+      className="print-area"
       style={{
         background: "#fff",
         fontFamily: "'Segoe UI', Arial, sans-serif",
         fontSize: 11,
       }}
     >
-      {/* ── HEADER ── */}
+      <style>
+        {`
+          @media print {
+            @page { size: landscape; margin: 10mm; }
+            body * { visibility: hidden !important; }
+            .print-area, .print-area * { visibility: visible !important; }
+            .print-area { 
+              position: absolute !important; 
+              left: 0 !important; 
+              top: 0 !important; 
+              width: 100% !important; 
+              margin: 0 !important;
+              padding: 0 !important;
+            }
+            thead { display: table-header-group; }
+            tfoot { display: table-footer-group; }
+            tr { page-break-inside: avoid; }
+          }
+        `}
+      </style>
+
       <table
         style={{
           width: "100%",
           borderCollapse: "collapse",
-          border: "2px solid #000",
+          fontSize: 10.5,
         }}
       >
-        <tbody>
+        <thead style={{ display: "table-header-group" }}>
           <tr>
-            {/* Left: Company */}
-            <td
-              style={{
-                background: "#daeaf0",
-                padding: "12px 16px",
-                borderRight: "2px solid #000",
-                verticalAlign: "top",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 16,
-                  fontWeight: 800,
-                  color: "#000",
-                  textTransform: "uppercase",
-                }}
-              >
-                {company.name}
-              </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "#000",
-                  marginTop: 4,
-                  lineHeight: 1.6,
-                  fontWeight: 500,
-                }}
-              >
-                {addrLines.map((l, i) => (
-                  <div key={i}>{l}</div>
-                ))}
-              </div>
-            </td>
-            {/* Right: Quotation box */}
-            <td
-              style={{
-                background: "#2e7d9a",
-                minWidth: 220,
-                verticalAlign: "top",
-              }}
-            >
-              <div
-                style={{
-                  color: "#fff",
-                  textAlign: "center",
-                  padding: "8px 12px",
-                  fontWeight: 800,
-                  fontSize: 14,
-                  borderBottom: "2px solid #000",
-                }}
-              >
-                Quotation
-              </div>
+            <td colSpan={9} style={{ padding: 0, border: "none" }}>
+              {/* ── HEADER ── */}
               <table
                 style={{
                   width: "100%",
                   borderCollapse: "collapse",
-                  background: "#fff",
+                  border: "2px solid #000",
                 }}
               >
                 <tbody>
-                  <tr style={{ borderBottom: "2px solid #000" }}>
+                  <tr>
+                    {/* Left: Company */}
                     <td
                       style={{
-                        padding: "6px 12px",
-                        fontWeight: 700,
-                        color: "#000",
-                        fontSize: 11.5,
+                        background: "#daeaf0",
+                        padding: "12px 16px",
+                        borderRight: "2px solid #000",
+                        verticalAlign: "top",
+                        width: "60%",
+                        WebkitPrintColorAdjust: "exact",
+                        printColorAdjust: "exact"
                       }}
                     >
-                      Quote No.:
+                      <div
+                        style={{
+                          fontSize: 16,
+                          fontWeight: 800,
+                          color: "#000",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {company.name}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: "#000",
+                          marginTop: 4,
+                          lineHeight: 1.6,
+                          fontWeight: 500,
+                        }}
+                      >
+                        {addrLines.map((l, i) => (
+                          <div key={i}>{l}</div>
+                        ))}
+                      </div>
                     </td>
+                    {/* Right: Quotation box */}
                     <td
                       style={{
-                        padding: "6px 12px",
-                        fontWeight: 700,
-                        color: "#000",
-                        fontSize: 11.5,
-                        textAlign: "right",
+                        background: "#2e7d9a",
+                        minWidth: 220,
+                        verticalAlign: "top",
+                        padding: 0,
+                        WebkitPrintColorAdjust: "exact",
+                        printColorAdjust: "exact"
                       }}
                     >
-                      {quote.quoteNo}
+                      <div
+                        style={{
+                          color: "#fff",
+                          textAlign: "center",
+                          padding: "8px 12px",
+                          fontWeight: 800,
+                          fontSize: 14,
+                          borderBottom: "2px solid #000",
+                        }}
+                      >
+                        Quotation
+                      </div>
+                      <table
+                        style={{
+                          width: "100%",
+                          borderCollapse: "collapse",
+                          background: "#fff",
+                        }}
+                      >
+                        <tbody>
+                          <tr style={{ borderBottom: "2px solid #000" }}>
+                            <td
+                              style={{
+                                padding: "6px 12px",
+                                fontWeight: 700,
+                                color: "#000",
+                                fontSize: 11.5,
+                              }}
+                            >
+                              Quote No.:
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px 12px",
+                                fontWeight: 700,
+                                color: "#000",
+                                fontSize: 11.5,
+                                textAlign: "right",
+                              }}
+                            >
+                              {quote.quoteNo}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td
+                              style={{
+                                padding: "6px 12px",
+                                fontWeight: 700,
+                                color: "#000",
+                                fontSize: 11.5,
+                              }}
+                            >
+                              Quote Date:
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px 12px",
+                                fontWeight: 700,
+                                color: "#000",
+                                fontSize: 11.5,
+                                textAlign: "right",
+                              }}
+                            >
+                              {quote.quoteDate}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </td>
                   </tr>
+                </tbody>
+              </table>
+
+              {/* ── CUSTOMER BAR ── */}
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  borderLeft: "2px solid #000",
+                  borderRight: "2px solid #000",
+                  borderBottom: "2px solid #000",
+                }}
+              >
+                <tbody>
                   <tr>
                     <td
                       style={{
-                        padding: "6px 12px",
-                        fontWeight: 700,
-                        color: "#000",
+                        background: "#2e7d9a",
+                        color: "#fff",
+                        padding: "8px 12px",
+                        fontWeight: 800,
                         fontSize: 11.5,
+                        width: 120,
+                        borderRight: "2px solid #000",
+                        textTransform: "uppercase",
+                        WebkitPrintColorAdjust: "exact",
+                        printColorAdjust: "exact"
                       }}
                     >
-                      Quote Date:
+                      Customer
                     </td>
                     <td
                       style={{
-                        padding: "6px 12px",
-                        fontWeight: 700,
+                        background: "#daeaf0",
                         color: "#000",
+                        padding: "8px 12px",
+                        fontWeight: 800,
                         fontSize: 11.5,
-                        textAlign: "right",
+                        WebkitPrintColorAdjust: "exact",
+                        printColorAdjust: "exact"
                       }}
                     >
-                      {quote.quoteDate}
+                      {quote.customer}
                     </td>
                   </tr>
                 </tbody>
               </table>
             </td>
           </tr>
-        </tbody>
-      </table>
 
-      {/* ── CUSTOMER BAR ── */}
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          borderLeft: "2px solid #000",
-          borderRight: "2px solid #000",
-          borderBottom: "2px solid #000",
-        }}
-      >
-        <tbody>
-          <tr>
-            <td
-              style={{
-                background: "#2e7d9a",
-                color: "#fff",
-                padding: "8px 12px",
-                fontWeight: 800,
-                fontSize: 11.5,
-                width: 120,
-                borderRight: "2px solid #000",
-                textTransform: "uppercase",
-              }}
-            >
-              Customer
-            </td>
-            <td
-              style={{
-                background: "#daeaf0",
-                color: "#000",
-                padding: "8px 12px",
-                fontWeight: 800,
-                fontSize: 11.5,
-              }}
-            >
-              {quote.customer}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      {/* ── ITEMS TABLE ── */}
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          fontSize: 10.5,
-          borderLeft: "2px solid #000",
-          borderRight: "2px solid #000",
-        }}
-      >
-        <thead>
-          <tr style={{ background: "#fff" }}>
-            <th style={{ ...thStyle, width: 45 }}>Sl. No.</th>
-            <th style={{ ...thStyle, textAlign: "left", minWidth: 220 }}>
+          {/* ── ITEMS TABLE HEADERS ── */}
+          <tr style={{ background: "#fff", borderLeft: "2px solid #000", borderRight: "2px solid #000" }}>
+            <th style={{ ...thStyle, width: 45, borderTop: "none" }}>Sl. No.</th>
+            <th style={{ ...thStyle, textAlign: "left", minWidth: 220, borderTop: "none" }}>
               Interior Work with Material
             </th>
-            <th style={{ ...thStyle, width: 45 }}>HSN</th>
-            <th style={{ ...thStyle, width: 40 }}>GST</th>
-            <th style={{ ...thStyle, width: 70 }}>Width in Feet</th>
-            <th style={{ ...thStyle, width: 75 }}>Height/Length in Feet</th>
-            <th style={{ ...thStyle, width: 70 }}>Total Area in SQFT</th>
-            <th style={{ ...thStyle, width: 85 }}>Cost per SQFT</th>
-            <th style={{ ...thStyle, width: 100 }}>Total Cost (Rs.)</th>
+            <th style={{ ...thStyle, width: 45, borderTop: "none" }}>HSN</th>
+            <th style={{ ...thStyle, width: 40, borderTop: "none" }}>GST</th>
+            <th style={{ ...thStyle, width: 70, borderTop: "none" }}>Width in Feet</th>
+            <th style={{ ...thStyle, width: 75, borderTop: "none" }}>Height/Length in Feet</th>
+            <th style={{ ...thStyle, width: 70, borderTop: "none" }}>Total Area in SQFT</th>
+            <th style={{ ...thStyle, width: 85, borderTop: "none" }}>Cost per SQFT</th>
+            <th style={{ ...thStyle, width: 100, borderTop: "none" }}>Total Cost (Rs.)</th>
           </tr>
         </thead>
-        <tbody>
+        
+        <tbody style={{ borderLeft: "2px solid #000", borderRight: "2px solid #000" }}>
           {quote.items.map((item) => (
             <tr key={item.id} style={{ background: "#fff" }}>
               <td style={{ ...tdStyle, textAlign: "center" }}>{item.slNo}</td>
@@ -938,6 +973,8 @@ function QuotationPDFView({ quote, company }) {
                 border: "2px solid #000",
                 color: "#000",
                 textTransform: "uppercase",
+                WebkitPrintColorAdjust: "exact",
+                printColorAdjust: "exact"
               }}
             >
               TOTALS excluding GST
@@ -952,6 +989,8 @@ function QuotationPDFView({ quote, company }) {
                 border: "2px solid #000",
                 color: "#000",
                 whiteSpace: "nowrap",
+                WebkitPrintColorAdjust: "exact",
+                printColorAdjust: "exact"
               }}
             >
               {Number(quote.totalExclGST).toLocaleString("en-IN", {
@@ -971,6 +1010,8 @@ function QuotationPDFView({ quote, company }) {
                 border: "2px solid #000",
                 color: "#000",
                 textTransform: "uppercase",
+                WebkitPrintColorAdjust: "exact",
+                printColorAdjust: "exact"
               }}
             >
               TOTALS including GST
@@ -985,6 +1026,8 @@ function QuotationPDFView({ quote, company }) {
                 border: "2px solid #000",
                 color: "#000",
                 whiteSpace: "nowrap",
+                WebkitPrintColorAdjust: "exact",
+                printColorAdjust: "exact"
               }}
             >
               {Number(quote.totalInclGST).toLocaleString("en-IN", {
@@ -993,209 +1036,217 @@ function QuotationPDFView({ quote, company }) {
             </td>
           </tr>
         </tbody>
-      </table>
 
-      {/* ── FOOTER: BANK + UPI + SIGNATURE ── */}
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          border: "2px solid #000",
-          borderTop: "none",
-          fontSize: 10.5,
-        }}
-      >
-        <tbody>
+        <tfoot style={{ display: "table-footer-group" }}>
           <tr>
-            {/* Bank Details */}
-            <td
-              style={{
-                padding: "10px 12px",
-                borderRight: "2px solid #000",
-                verticalAlign: "top",
-                width: "45%",
-              }}
-            >
-              <div
+            <td colSpan={9} style={{ padding: 0, border: "none" }}>
+              {/* ── FOOTER: BANK + UPI + SIGNATURE ── */}
+              <table
                 style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  textDecoration: "underline",
-                  marginBottom: 6,
-                  color: "#000",
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  border: "2px solid #000",
+                  borderTop: "none",
+                  fontSize: 10.5,
                 }}
               >
-                Bank Details:
-              </div>
-              <div style={{ lineHeight: 1.6, color: "#000" }}>
-                <div>
-                  <strong>Account Number :</strong> {company.bank}
-                </div>
-                <div>
-                  <strong>Account Holder's Name :</strong>{" "}
-                  {company.accountHolder}
-                </div>
-                <div>
-                  <strong>IFSC Code :</strong> {company.ifsc}
-                </div>
-              </div>
-            </td>
+                <tbody>
+                  <tr>
+                    {/* Bank Details */}
+                    <td
+                      style={{
+                        padding: "10px 12px",
+                        borderRight: "2px solid #000",
+                        verticalAlign: "top",
+                        width: "45%",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 800,
+                          textDecoration: "underline",
+                          marginBottom: 6,
+                          color: "#000",
+                        }}
+                      >
+                        Bank Details:
+                      </div>
+                      <div style={{ lineHeight: 1.6, color: "#000" }}>
+                        <div>
+                          <strong>Account Number :</strong> {company.bank}
+                        </div>
+                        <div>
+                          <strong>Account Holder's Name :</strong>{" "}
+                          {company.accountHolder}
+                        </div>
+                        <div>
+                          <strong>IFSC Code :</strong> {company.ifsc}
+                        </div>
+                      </div>
+                    </td>
 
-            {/* UPI */}
-            <td
-              style={{
-                padding: "10px 12px",
-                borderRight: "2px solid #000",
-                verticalAlign: "top",
-                width: "30%",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  textDecoration: "underline",
-                  marginBottom: 6,
-                  color: "#000",
-                }}
-              >
-                Pay using UPI:
-              </div>
-              <div
-                style={{
-                  fontFamily: "monospace",
-                  fontSize: 10,
-                  background: "#f1f5f9",
-                  border: "1px solid #ccc",
-                  borderRadius: 4,
-                  padding: "4px 7px",
-                  display: "inline-block",
-                  wordBreak: "break-all",
-                  marginBottom: 6,
-                  color: "#000",
-                }}
-              >
-                {company.upi}
-              </div>
-              {company.qrDataUrl && (
-                <div>
-                  <img
-                    src={company.qrDataUrl}
-                    alt="QR"
-                    style={{
-                      maxWidth: 60,
-                      maxHeight: 60,
-                      border: "1px solid #ccc",
-                      padding: 2,
-                    }}
-                  />
-                </div>
-              )}
-            </td>
+                    {/* UPI */}
+                    <td
+                      style={{
+                        padding: "10px 12px",
+                        borderRight: "2px solid #000",
+                        verticalAlign: "top",
+                        width: "30%",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 800,
+                          textDecoration: "underline",
+                          marginBottom: 6,
+                          color: "#000",
+                        }}
+                      >
+                        Pay using UPI:
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: "monospace",
+                          fontSize: 10,
+                          background: "#f1f5f9",
+                          border: "1px solid #ccc",
+                          borderRadius: 4,
+                          padding: "4px 7px",
+                          display: "inline-block",
+                          wordBreak: "break-all",
+                          marginBottom: 6,
+                          color: "#000",
+                          WebkitPrintColorAdjust: "exact",
+                          printColorAdjust: "exact"
+                        }}
+                      >
+                        {company.upi}
+                      </div>
+                      {company.qrDataUrl && (
+                        <div>
+                          <img
+                            src={company.qrDataUrl}
+                            alt="QR"
+                            style={{
+                              maxWidth: 60,
+                              maxHeight: 60,
+                              border: "1px solid #ccc",
+                              padding: 2,
+                            }}
+                          />
+                        </div>
+                      )}
+                    </td>
 
-            {/* Signature */}
-            <td
-              style={{
-                padding: "10px 12px",
-                verticalAlign: "top",
-                width: "25%",
-                textAlign: "center",
-              }}
-            >
-              <div
+                    {/* Signature */}
+                    <td
+                      style={{
+                        padding: "10px 12px",
+                        verticalAlign: "top",
+                        width: "25%",
+                        textAlign: "center",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 800,
+                          textDecoration: "underline",
+                          marginBottom: 6,
+                          color: "#000",
+                          textAlign: "left",
+                        }}
+                      >
+                        Signature:
+                      </div>
+                      {company.sigDataUrl ? (
+                        <img
+                          src={company.sigDataUrl}
+                          alt="Signature"
+                          style={{
+                            maxWidth: 95,
+                            maxHeight: 75,
+                            border: "1px solid #ccc",
+                            padding: 2,
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: 80,
+                            height: 60,
+                            border: "1px dashed #bbb",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 9,
+                            color: "#999",
+                            borderRadius: 4,
+                            margin: "0 auto",
+                          }}
+                        >
+                          Stamp/Sign
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* ── PAYMENT SCHEDULE ── */}
+              <table
                 style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  textDecoration: "underline",
-                  marginBottom: 6,
-                  color: "#000",
-                  textAlign: "left",
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  border: "2px solid #000",
+                  borderTop: "none",
+                  fontSize: 10.5,
                 }}
               >
-                Signature:
+                <tbody>
+                  <tr>
+                    <td style={{ padding: "10px 12px", verticalAlign: "top" }}>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 800,
+                          textDecoration: "underline",
+                          marginBottom: 4,
+                          color: "#000",
+                        }}
+                      >
+                        Payment Schedule:
+                      </div>
+                      <div style={{ lineHeight: 1.6, color: "#000" }}>
+                        <div>1) 50% advance payment is required at the start of the work</div>
+                        <div>2) 40% Upon completion</div>
+                        <div>3) 10% During handover</div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* ── NOTE ── */}
+              <div
+                style={{
+                  background: "#fff",
+                  border: "2px solid #000",
+                  borderTop: "none",
+                  padding: "8px 12px",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "#000",
+                }}
+              >
+                Note: Above mentioned charges are inclusive of Labour and Material cost.
               </div>
-              {company.sigDataUrl ? (
-                <img
-                  src={company.sigDataUrl}
-                  alt="Signature"
-                  style={{
-                    maxWidth: 95,
-                    maxHeight: 75,
-                    border: "1px solid #ccc",
-                    padding: 2,
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: 80,
-                    height: 60,
-                    border: "1px dashed #bbb",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 9,
-                    color: "#999",
-                    borderRadius: 4,
-                    margin: "0 auto",
-                  }}
-                >
-                  Stamp/Sign
-                </div>
-              )}
             </td>
           </tr>
-        </tbody>
+        </tfoot>
       </table>
-
-      {/* ── PAYMENT SCHEDULE ── */}
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          border: "2px solid #000",
-          borderTop: "none",
-          fontSize: 10.5,
-        }}
-      >
-        <tbody>
-          <tr>
-            <td style={{ padding: "10px 12px", verticalAlign: "top" }}>
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  textDecoration: "underline",
-                  marginBottom: 4,
-                  color: "#000",
-                }}
-              >
-                Payment Schedule:
-              </div>
-              <div style={{ lineHeight: 1.6, color: "#000" }}>
-                <div>1) 50% advance payment is required at the start of the work</div>
-                <div>2) 40% Upon completion</div>
-                <div>3) 10% During handover</div>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      {/* ── NOTE ── */}
-      <div
-        style={{
-          background: "#fff",
-          border: "2px solid #000",
-          borderTop: "none",
-          padding: "8px 12px",
-          fontSize: 11,
-          fontWeight: 700,
-          color: "#000",
-        }}
-      >
-        Note: Above mentioned charges are inclusive of Labour and Material cost.
-      </div>
     </div>
   );
 }
@@ -1205,60 +1256,10 @@ function QuotationViewDetail({ quote, company, onClose }) {
   const [downloading, setDownloading] = useState(false);
   const pdfRef = useRef(null);
 
-  const handleDownload = async () => {
-    setDownloading(true);
-    try {
-      await new Promise((resolve, reject) => {
-        if (window.jspdf) return resolve();
-        const s = document.createElement("script");
-        s.src =
-          "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
-        s.onload = resolve;
-        s.onerror = reject;
-        document.head.appendChild(s);
-      });
-      await new Promise((resolve, reject) => {
-        if (window.html2canvas) return resolve();
-        const s = document.createElement("script");
-        s.src =
-          "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-        s.onload = resolve;
-        s.onerror = reject;
-        document.head.appendChild(s);
-      });
-
-      const element = pdfRef.current;
-      const canvas = await window.html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        logging: false,
-      });
-
-      const imgData = canvas.toDataURL("image/png");
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({
-        orientation: "landscape",
-        unit: "mm",
-        format: "a4",
-      });
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = pdf.internal.pageSize.getHeight();
-      const imgH = (canvas.height * pdfW) / canvas.width;
-      let yPos = 0,
-        page = 0;
-      while (yPos < imgH) {
-        if (page > 0) pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, -yPos, pdfW, imgH);
-        yPos += pdfH;
-        page++;
-      }
-      pdf.save(`Quotation_${quote.quoteNo}_${quote.customer}.pdf`);
-    } catch (err) {
-      console.error("PDF error:", err);
-      alert("PDF generation failed. Please try again.");
-    }
-    setDownloading(false);
+  const handleDownload = () => {
+    // We rely on the browser's native print to handle repeating table headers gracefully
+    // when spanning across multiple pages. The print CSS hides everything else.
+    window.print();
   };
 
   return (
@@ -1318,14 +1319,13 @@ function QuotationViewDetail({ quote, company, onClose }) {
         <div>
           <button
             onClick={handleDownload}
-            disabled={downloading}
             style={{
               padding: "8px 18px",
-              background: downloading ? "#94A3B8" : "#059669",
+              background: "#059669",
               color: "#fff",
               border: "none",
               borderRadius: 8,
-              cursor: downloading ? "not-allowed" : "pointer",
+              cursor: "pointer",
               fontSize: 13,
               fontWeight: 600,
               display: "flex",
@@ -1335,7 +1335,7 @@ function QuotationViewDetail({ quote, company, onClose }) {
             }}
           >
             <Download size={15} />
-            {downloading ? "Generating PDF..." : "Download PDF"}
+            Print / Download PDF
           </button>
         </div>
       </div>

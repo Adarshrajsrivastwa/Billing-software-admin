@@ -46,152 +46,210 @@ export default function UploadExcelModal({ onClose, onSave }) {
       try {
         const data = e.target.result;
         const workbook = XLSX.read(data, { type: "binary" });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        
-        // Convert sheet to JSON array of arrays
-        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        
         let items = [];
         let totalExclGST = 0;
-        let started = false;
-        
-        let colMap = {
-          slNo: 0,
-          desc: 1,
-          hsn: -1,
-          qty: 3,
-          rate: 4,
-          amount: 5,
-          gst: 6,
-          width: -1,
-          height: -1
-        };
 
-        let headerCols = [];
+        for (let sheetIndex = 0; sheetIndex < workbook.SheetNames.length; sheetIndex++) {
+          const sheetName = workbook.SheetNames[sheetIndex];
+          const worksheet = workbook.Sheets[sheetName];
+          const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          
+          let started = false;
+          let colMap = { slNo: 0, desc: 1, hsn: -1, qty: 3, rate: 4, amount: 5, gst: 6, width: -1, height: -1 };
+          let headerCols = [];
+          
+          let sheetItems = [];
+          let sheetTotalGST = 0;
 
-        for (let i = 0; i < rows.length; i++) {
-          const row = rows[i];
-          if (!row || row.length === 0) continue;
+          for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row || row.length === 0) continue;
 
-          if (!started) {
-            // Accumulate headers vertically
-            for(let j = 0; j < row.length; j++) {
-              if (row[j] !== undefined && row[j] !== null) {
-                const val = String(row[j]).trim().toLowerCase();
-                if (val) {
-                  if (!headerCols[j]) headerCols[j] = "";
-                  headerCols[j] += " " + val;
-                }
-              }
-            }
-
-            // Try to map columns dynamically based on accumulated headers so far
-            let tempColMap = { slNo: -1, desc: -1, hsn: -1, qty: -1, rate: -1, amount: -1, gst: -1, width: -1, height: -1 };
-
-            headerCols.forEach((colName, index) => {
-              if (!colName) return;
-              if (colName.includes("sl") || colName.includes("s.no") || colName.includes("serial") || colName.includes("sr no") || colName === "#" || colName === "no") { tempColMap.slNo = index; return; }
-              if (colName.includes("particular") || colName.includes("description") || colName.includes("work") || colName.includes("item") || colName.includes("detail") || colName.includes("spec") || colName.includes("product") || colName.includes("material")) { tempColMap.desc = index; return; }
-              if (colName.includes("hsn") || colName.includes("sac")) { tempColMap.hsn = index; return; }
-              if (colName.includes("qty") || colName.includes("quantity") || colName.includes("area") || colName.includes("sqf")) { tempColMap.qty = index; return; }
-              if (colName.includes("rate") || colName.includes("price") || colName.includes("cost per") || colName.includes("cost/sqft") || colName === "cost") { tempColMap.rate = index; return; }
-              if ((colName.includes("amount") || colName.includes("amt") || colName.includes("total") || colName.includes("sum") || colName.includes("value")) && !colName.includes("gst") && !colName.includes("area")) { tempColMap.amount = index; return; }
-              if ((colName.includes("gst") || colName.includes("tax")) && !colName.includes("amount") && !colName.includes("amt") && !colName.includes("total")) { tempColMap.gst = index; return; }
-              if (colName === "w" || colName === "b" || colName.includes("width") || colName.includes("breadth")) { tempColMap.width = index; return; }
-              if (colName === "h" || colName === "l" || colName.includes("height") || colName.includes("length") || colName.includes("depth")) { tempColMap.height = index; return; }
-            });
-
-            // Validation: A valid header row needs Description AND (Amount OR Rate) in DIFFERENT columns
-            if (tempColMap.desc >= 0 && (tempColMap.amount >= 0 || tempColMap.rate >= 0) && tempColMap.desc !== tempColMap.amount && tempColMap.desc !== tempColMap.rate) {
-              // If it also has at least 3 distinct recognized columns, we've found the header!
-              let distinctIndices = new Set(Object.values(tempColMap).filter(v => v >= 0));
-              if (distinctIndices.size >= 3) {
-                colMap = tempColMap;
-                started = true;
-              }
-            }
-            continue; // Keep accumulating or just wait for next row if started
-          }
-
-          if (started) {
-            let slNoVal = colMap.slNo >= 0 && row[colMap.slNo] !== undefined ? String(row[colMap.slNo]).trim() : "";
-            let descVal = colMap.desc >= 0 && row[colMap.desc] !== undefined ? String(row[colMap.desc]).trim() : "";
-            
-            // Check if there is text in a column before the description column (e.g., a category name)
-            let extraDesc = "";
-            for(let c = 0; c < colMap.desc; c++) {
-              if (c !== colMap.slNo && row[c] !== undefined && row[c] !== null && String(row[c]).trim() !== "") {
-                extraDesc = String(row[c]).trim();
-                break;
-              }
-            }
-
-            if (extraDesc && !descVal) {
-              // The description is actually in the extraDesc column!
-              descVal = extraDesc;
-              extraDesc = ""; 
-            }
-            
-            // Skip summary rows
-            if (descVal && !descVal.toLowerCase().includes("sub total") && !descVal.toLowerCase().includes("grand total") && !descVal.toLowerCase().includes("tax") && !descVal.toLowerCase().startsWith("total")) {
-              
-              if (extraDesc && !extraDesc.toLowerCase().includes("total") && !extraDesc.toLowerCase().includes("tax")) {
-                items.push({
-                  slNo: slNoVal,
-                  description: extraDesc,
-                  hsn: "", gst: "", width: 0, height: 0, area: 0, costPerSqft: 0, totalCost: 0
-                });
-                slNoVal = ""; // Don't repeat slNo for the actual item
-              }
-              
-              let hsn = colMap.hsn >= 0 && row[colMap.hsn] !== undefined ? String(row[colMap.hsn]).trim() : "9403";
-              if (!hsn) hsn = "9403";
-              
-              // Remove commas and currency symbols from numbers
-              const parseNumber = (val) => {
-                if (typeof val === 'number') return val;
-                if (!val) return 0;
-                const cleaned = String(val).replace(/,/g, '').replace(/[^\d.-]/g, '');
-                return parseFloat(cleaned) || 0;
-              };
-
-              const qty = parseNumber(row[colMap.qty]);
-              const rate = parseNumber(row[colMap.rate]);
-              let amount = parseNumber(row[colMap.amount]);
-              const width = colMap.width >= 0 ? parseNumber(row[colMap.width]) : 0;
-              const height = colMap.height >= 0 ? parseNumber(row[colMap.height]) : 0;
-              
-              let gstVal = "18%";
-              if (colMap.gst >= 0 && row[colMap.gst] !== undefined) {
-                let rawGst = String(row[colMap.gst]).trim();
-                if (rawGst) {
-                  let parsedGst = parseFloat(rawGst);
-                  if (!isNaN(parsedGst) && !rawGst.includes("%")) {
-                    if (parsedGst < 1) gstVal = `${parsedGst * 100}%`;
-                    else gstVal = `${parsedGst}%`;
-                  } else {
-                    gstVal = rawGst;
+            if (!started) {
+              for(let j = 0; j < row.length; j++) {
+                if (row[j] !== undefined && row[j] !== null) {
+                  const val = String(row[j]).trim().toLowerCase();
+                  if (val) {
+                    if (!headerCols[j]) headerCols[j] = "";
+                    headerCols[j] += " " + val;
                   }
                 }
               }
 
-              const itemTotal = amount > 0 ? amount : parseFloat((qty * rate).toFixed(2));
-              
-              items.push({
-                slNo: slNoVal,
-                description: descVal,
-                hsn: hsn,
-                gst: gstVal,
-                width: width,
-                height: height,
-                area: qty,
-                costPerSqft: rate,
-                totalCost: itemTotal
+              let tempColMap = { slNo: -1, desc: -1, hsn: -1, qty: -1, rate: -1, amount: -1, gst: -1, width: -1, height: -1 };
+
+              headerCols.forEach((colName, index) => {
+                if (!colName) return;
+                if (colName.includes("sl") || colName.includes("s.no") || colName.includes("serial") || colName.includes("sr no") || colName.includes("sr.") || colName.includes("sn") || colName === "#" || colName === "no" || colName === "no.") { tempColMap.slNo = index; return; }
+                if (colName.includes("particular") || colName.includes("description") || colName.includes("work") || colName.includes("item") || colName.includes("detail") || colName.includes("spec") || colName.includes("product") || colName.includes("material") || colName.includes("name")) { tempColMap.desc = index; return; }
+                if (colName.includes("hsn") || colName.includes("sac")) { tempColMap.hsn = index; return; }
+                if (colName.includes("qty") || colName.includes("quantity") || colName.includes("area") || colName.includes("sqf") || colName.includes("nos") || colName.includes("unit") || colName.includes("vol")) { tempColMap.qty = index; return; }
+                if (colName.includes("rate") || colName.includes("price") || colName.includes("cost per") || colName.includes("cost/sqft") || colName === "cost") { tempColMap.rate = index; return; }
+                if ((colName.includes("amount") || colName.includes("amt") || colName.includes("total") || colName.includes("sum") || colName.includes("value")) && !colName.includes("gst") && !colName.includes("area")) { tempColMap.amount = index; return; }
+                if ((colName.includes("gst") || colName.includes("tax")) && !colName.includes("amount") && !colName.includes("amt") && !colName.includes("total")) { tempColMap.gst = index; return; }
+                if (colName === "w" || colName === "b" || colName.includes("width") || colName.includes("breadth")) { tempColMap.width = index; return; }
+                if (colName === "h" || colName === "l" || colName.includes("height") || colName.includes("length") || colName.includes("depth")) { tempColMap.height = index; return; }
               });
 
-              totalExclGST += itemTotal;
+              if (tempColMap.desc >= 0 && (tempColMap.amount >= 0 || tempColMap.rate >= 0) && tempColMap.desc !== tempColMap.amount && tempColMap.desc !== tempColMap.rate) {
+                let distinctIndices = new Set(Object.values(tempColMap).filter(v => v >= 0));
+                if (distinctIndices.size >= 2) {
+                  colMap = tempColMap;
+                  started = true;
+                }
+              }
+              continue;
             }
+
+            if (started) {
+              let slNoVal = colMap.slNo >= 0 && row[colMap.slNo] !== undefined && row[colMap.slNo] !== null ? String(row[colMap.slNo]).trim() : "";
+              let descVal = colMap.desc >= 0 && row[colMap.desc] !== undefined && row[colMap.desc] !== null ? String(row[colMap.desc]).trim() : "";
+              
+              let extraDesc = "";
+              for(let c = 0; c < colMap.desc; c++) {
+                if (c !== colMap.slNo && row[c] !== undefined && row[c] !== null && String(row[c]).trim() !== "") {
+                  extraDesc = String(row[c]).trim();
+                  break;
+                }
+              }
+
+              if (extraDesc && !descVal) {
+                descVal = extraDesc;
+                extraDesc = ""; 
+              } else if (extraDesc && descVal) {
+                descVal = extraDesc + " - " + descVal;
+                extraDesc = "";
+              }
+              
+              if (descVal && !descVal.toLowerCase().includes("sub total") && !descVal.toLowerCase().includes("grand total") && !descVal.toLowerCase().includes("tax") && !descVal.toLowerCase().startsWith("total")) {
+                
+                if (extraDesc && !extraDesc.toLowerCase().includes("total") && !extraDesc.toLowerCase().includes("tax")) {
+                  sheetItems.push({
+                    id: Date.now() + Math.random(),
+                    slNo: slNoVal,
+                    description: extraDesc,
+                    hsn: "", gst: "", width: 0, height: 0, area: 0, costPerSqft: 0, totalCost: 0
+                  });
+                  slNoVal = ""; 
+                }
+                
+                let hsn = colMap.hsn >= 0 && row[colMap.hsn] !== undefined && row[colMap.hsn] !== null ? String(row[colMap.hsn]).trim() : "9403";
+                if (!hsn) hsn = "9403";
+                
+                const parseNumber = (val) => {
+                  if (typeof val === 'number') return val;
+                  if (!val) return 0;
+                  const cleaned = String(val).replace(/,/g, '').replace(/[^\d.-]/g, '');
+                  return parseFloat(cleaned) || 0;
+                };
+
+                const qty = parseNumber(row[colMap.qty]);
+                const rate = parseNumber(row[colMap.rate]);
+                let amount = parseNumber(row[colMap.amount]);
+                const width = colMap.width >= 0 ? parseNumber(row[colMap.width]) : 0;
+                const height = colMap.height >= 0 ? parseNumber(row[colMap.height]) : 0;
+                
+                let gstVal = "18%";
+                if (colMap.gst >= 0 && row[colMap.gst] !== undefined && row[colMap.gst] !== null) {
+                  let rawGst = String(row[colMap.gst]).trim();
+                  if (rawGst) {
+                    let parsedGst = parseFloat(rawGst);
+                    if (!isNaN(parsedGst) && !rawGst.includes("%")) {
+                      if (parsedGst < 1) gstVal = `${parsedGst * 100}%`;
+                      else gstVal = `${parsedGst}%`;
+                    } else {
+                      gstVal = rawGst;
+                    }
+                  }
+                }
+
+                const itemTotal = amount > 0 ? amount : parseFloat((qty * rate).toFixed(2));
+                
+                sheetItems.push({
+                  id: Date.now() + Math.random(),
+                  slNo: slNoVal,
+                  description: descVal,
+                  hsn: hsn,
+                  gst: gstVal,
+                  width: width,
+                  height: height,
+                  area: qty,
+                  costPerSqft: rate,
+                  totalCost: itemTotal
+                });
+
+                sheetTotalGST += itemTotal;
+              }
+            }
+          }
+
+          if (sheetItems.length === 0) {
+            for (let i = 0; i < rows.length; i++) {
+              const row = rows[i];
+              if (!row || row.length === 0) continue;
+              
+              let desc = "";
+              let extraStr = "";
+              let nums = [];
+              
+              for (let j = 0; j < row.length; j++) {
+                if (row[j] !== undefined && row[j] !== null) {
+                  const val = row[j];
+                  const parsed = parseFloat(String(val).replace(/,/g, '').replace(/[^\d.-]/g, ''));
+                  if (typeof val === 'string' && isNaN(Number(val)) && val.trim().length > 1) {
+                    if (!desc) desc = val.trim();
+                    else if (!extraStr) extraStr = val.trim();
+                  } else if (!isNaN(parsed) && String(val).trim() !== "") {
+                    nums.push(parsed);
+                  }
+                }
+              }
+              
+              if (desc && !desc.toLowerCase().includes("total") && !desc.toLowerCase().includes("tax")) {
+                if (nums.length >= 2) {
+                  let qty = 1, rate = 0, amount = 0;
+                  if (nums.length >= 3) {
+                    qty = nums[nums.length - 3];
+                    rate = nums[nums.length - 2];
+                    amount = nums[nums.length - 1];
+                  } else if (nums.length === 2) {
+                    rate = nums[0];
+                    amount = nums[1];
+                  }
+                  
+                  const itemTotal = amount > 0 ? amount : parseFloat((qty * rate).toFixed(2));
+                  let finalDesc = desc;
+                  if (extraStr && extraStr.length > 1) finalDesc = desc + " - " + extraStr;
+                  
+                  sheetItems.push({
+                    id: Date.now() + Math.random(),
+                    slNo: "",
+                    description: finalDesc,
+                    hsn: "9403",
+                    gst: "18%",
+                    width: 0, height: 0,
+                    area: qty,
+                    costPerSqft: rate,
+                    totalCost: itemTotal
+                  });
+                  sheetTotalGST += itemTotal;
+                }
+              }
+            }
+          }
+          
+          if (sheetItems.length > 0) {
+            // Include sheet name as a category header if there are multiple sheets
+            if (workbook.SheetNames.length > 1) {
+              items.push({
+                id: Date.now() + Math.random(),
+                slNo: "",
+                description: `--- ${sheetName.toUpperCase()} ---`,
+                hsn: "", gst: "", width: 0, height: 0, area: 0, costPerSqft: 0, totalCost: 0
+              });
+            }
+            items = items.concat(sheetItems);
+            totalExclGST += sheetTotalGST;
           }
         }
 

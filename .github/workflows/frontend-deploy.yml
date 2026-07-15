@@ -1,0 +1,54 @@
+name: S2 Admin Frontend CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/s2admin-frontend-deploy.yml'
+
+jobs:
+  deploy:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Production Server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.S2ADMIN_SERVER_HOST }}
+          username: root
+          password: ${{ secrets.S2ADMIN_SERVER_PASSWORD }}
+          port: 22
+          script: |
+            echo "🚀 Deploy Started"
+
+            cd ~/admin/Billing-software-admin/frontend
+
+            echo "📥 Pulling Latest Code..."
+            git pull origin main
+
+            echo "📦 Installing Dependencies..."
+            npm install
+
+            echo "🏗 Building Frontend..."
+            npm run build
+
+            echo "🧹 Cleaning Old Build..."
+            rm -rf /var/www/admin/*
+
+            echo "📁 Copying New Build..."
+            cp -r dist/* /var/www/admin/
+
+            echo "🔐 Setting Permissions..."
+            chown -R www-data:www-data /var/www/admin
+            chmod -R 755 /var/www/admin
+
+            echo "🔍 Checking Nginx..."
+            nginx -t
+
+            echo "♻️ Reloading Nginx..."
+            systemctl reload nginx
+
+            echo "✅ Deployment Successful"
