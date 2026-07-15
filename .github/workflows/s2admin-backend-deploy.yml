@@ -1,0 +1,44 @@
+name: S2 Admin Backend CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/s2admin-backend-deploy.yml'
+
+jobs:
+  deploy:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy Backend to Production
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.S2ADMIN_SERVER_HOST }}
+          username: root
+          password: ${{ secrets.S2ADMIN_SERVER_PASSWORD }}
+          port: 22
+          script: |
+            echo "🚀 Backend Deployment Started"
+
+            cd ~/admin/Billing-software-admin/backend
+
+            echo "📥 Pulling Latest Code..."
+            git pull origin main
+
+            echo "📦 Installing Dependencies..."
+            npm install
+
+            echo "♻️ Restarting PM2..."
+            pm2 restart all
+
+            echo "💾 Saving PM2..."
+            pm2 save
+
+            echo "📋 PM2 Status"
+            pm2 list
+
+            echo "✅ Backend Deployment Successful"
