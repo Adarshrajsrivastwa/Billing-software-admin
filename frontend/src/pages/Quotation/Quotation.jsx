@@ -1395,7 +1395,9 @@ function QuotationFormView({ initial, onSave, onClose }) {
   );
   const [customer, setCustomer] = useState(initial?.customer || "");
   const [items, setItems] = useState(
-    initial?.items?.length ? initial.items : [blankItem()],
+    initial?.items?.length 
+      ? initial.items.map((i, idx) => i.id ? i : { ...i, id: Date.now() + Math.random() + idx }) 
+      : [blankItem()],
   );
 
   const iStyle = {
